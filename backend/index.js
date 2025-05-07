@@ -6,7 +6,9 @@ const app = express();
 
 // Configure CORS to accept requests from Vercel frontend and localhost
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || "http://localhost:3000"],
+  origin: ["https://bulk-mail-mern-app-mu.vercel.app", "https://bulk-mail-sender-backend-dsk1.onrender.com", process.env.FRONTEND_URL || "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 app.use(express.json());
