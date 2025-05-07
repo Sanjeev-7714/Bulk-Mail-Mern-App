@@ -4,12 +4,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bulk Mail</title>
+  <meta name="description" content="Bulk Mail Sender - Send personalized emails to multiple recipients at once">
+  <meta name="theme-color" content="#1e40af">
+  <title>Bulk Mail Sender | Send Mass Emails Easily</title>
   <link rel="icon" href="logo.jpg">
+  <!-- Inter font from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Preload animation styles to avoid layout shifts -->
+  <style>
+    .preload-fade-in {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+    }
+  </style>
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" class="preload-fade-in"></div>
 </body>
 
 </html>
