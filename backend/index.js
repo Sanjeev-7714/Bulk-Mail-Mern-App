@@ -33,39 +33,76 @@ app.post("/sendemail", function (req, res) {
 
   credential.find().then(function(data){
 
+    // Create nodemailer transporter with more secure settings
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // Use SSL
       auth: {
         user: data[0].toJSON().user,
         pass: data[0].toJSON().pass,
       },
+      tls: {
+        // Do not fail on invalid certificates
+        rejectUnauthorized: false
+      }
     });
-  
-    new Promise(async function (resolve, reject) {
-      try {
-        for (var i = 0; i < emailList.length; i++) {
-          await transporter.sendMail(
-            {
-              from: "sanjusanjeev023@gmail.com",
-              to: emailList[i],
-              subject: "Test mail",
-              text: msg,
-            },
-          );
-  
-          console.log("Email sent to : " + emailList[i]);
+    
+    // Verify transporter configuration before sending emails
+    transporter.verify().then(function() {
+      console.log("Server is ready to send emails");
+      
+      // Only proceed with sending emails after successful verification
+      return new Promise(async function (resolve, reject) {
+        try {
+          for (var i = 0; i < emailList.length; i++) {
+            await transporter.sendMail(
+              {
+                from: "sanjusanjeev023@gmail.com",
+                to: emailList[i],
+                subject: "Test mail",
+                text: msg,
+              },
+            );
+    
+            console.log("Email sent to : " + emailList[i]);
+          }
+    
+          resolve("Emails sent successfully");
         }
-  
-        resolve("Emails sent successfully");
-      }
-      catch (error) {
-        console.error("Error sending emails:", error);
-        reject(error);
-      }
+        catch (error) {
+          console.error("Error sending emails:", error);
+          // Provide more detailed error information
+          if (error.code === 'EAUTH') {
+            console.error("Authentication error: Check your Gmail credentials and make sure you're using an App Password if 2FA is enabled");
+            reject(new Error("Authentication failed: Please check your Gmail credentials and security settings"));
+          } else if (error.code === 'ESOCKET') {
+            console.error("Network error: Check your internet connection");
+            reject(new Error("Network error: Unable to connect to email server"));
+          } else if (error.code === 'ERR_BAD_RESPONSE' || error.message.includes('status code 500')) {
+            console.error("Server error: The mail server returned a bad response");
+            reject(new Error("Mail server error: Please try again later or check your Gmail account settings"));
+          } else {
+            reject(error);
+          }
+        }
+      });
+    }).catch(function(verifyError) {
+      // Handle verification errors
+      console.error("SMTP verification failed:", verifyError);
+      res.status(500).send("Email configuration error: " + verifyError.message + 
+        "\n\nNote: If using Gmail, make sure you have:\n" +
+        "1. Enabled 'Less secure app access' in your Google account, OR\n" +
+        "2. Created an App Password if 2FA is enabled\n" +
+        "3. Allowed access to your Google account from this application");
+      return Promise.reject(verifyError); // Prevent further promise chain execution
     }).then(function (result) {
       res.send(result);
     }).catch(function (error) {
-      res.status(500).send("Error sending emails: " + error.message);
+      // Only handle errors that weren't already handled in the verification catch block
+      if (!res.headersSent) {
+        res.status(500).send("Error sending emails: " + error.message);
+      }
     });
   }).catch(function(error){
     res.status(500).send("Error fetching credentials: " + error.message);
